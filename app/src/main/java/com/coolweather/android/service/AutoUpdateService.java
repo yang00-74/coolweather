@@ -36,7 +36,7 @@ public class AutoUpdateService extends Service {
         updateWeather();
         updateBingpic();
         AlarmManager manager = (AlarmManager) getSystemService(ALARM_SERVICE);
-        int anHour = 6 * 60 * 1000;
+        int anHour = 5 * 60 * 1000;
         long triggerAtTime = SystemClock.elapsedRealtime() + anHour;
         Intent intent1 = new Intent(this, AutoUpdateService.class);
         PendingIntent pi = PendingIntent.getService(this, 0, intent1, 0);
@@ -52,7 +52,8 @@ public class AutoUpdateService extends Service {
             final Weather weather = Utility.handleWeatherRespone(weatherString);
             String weatherId = weather.basic.weatherId;
 
-            String weatherUrl = "http://guolin.tech/api/weather?cityid=" + weatherId + "&key=cdb7dc83f26141d9b83e15e6e92acb72";
+            String weatherUrl = "http://guolin.tech/api/weather?cityid="
+                    + weatherId + "&key=cdb7dc83f26141d9b83e15e6e92acb72";
             HttpUtil.sendOkHttpRequest(weatherUrl, new Callback() {
                 @Override
                 public void onFailure(Call call, IOException e) {
@@ -66,8 +67,8 @@ public class AutoUpdateService extends Service {
                     Weather weather = Utility.handleWeatherRespone(responseText);
 
                     if (weather != null && "ok".equals(weather.status)) {
-                        SharedPreferences.Editor editor = PreferenceManager.getDefaultSharedPreferences(AutoUpdateService.this)
-                                .edit();
+                        SharedPreferences.Editor editor = PreferenceManager
+                                .getDefaultSharedPreferences(AutoUpdateService.this).edit();
                         editor.putString("weather", responseText);
                         editor.apply();
                     }
@@ -85,11 +86,13 @@ public class AutoUpdateService extends Service {
             public void onFailure(Call call, IOException e) {
                 e.printStackTrace();
             }
+
             @Override
             public void onResponse(Call call, Response response) throws IOException {
 
                 final String bingPic = response.body().string();
-                SharedPreferences.Editor editor = PreferenceManager.getDefaultSharedPreferences(AutoUpdateService.this).edit();
+                SharedPreferences.Editor editor = PreferenceManager
+                        .getDefaultSharedPreferences(AutoUpdateService.this).edit();
                 editor.putString("bing_pic", bingPic);
                 editor.apply();
             }

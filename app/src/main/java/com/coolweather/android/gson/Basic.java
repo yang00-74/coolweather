@@ -3,7 +3,6 @@ package com.coolweather.android.gson;
 import com.google.gson.annotations.SerializedName;
 
 /**
- * Created by ts on 17-11-29.
  */
 
 public class Basic {

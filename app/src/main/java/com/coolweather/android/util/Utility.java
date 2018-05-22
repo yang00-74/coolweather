@@ -13,7 +13,6 @@ import org.json.JSONException;
 import org.json.JSONObject;
 
 /**
- * Created by ts on 17-11-29.
  */
 
 public class Utility {

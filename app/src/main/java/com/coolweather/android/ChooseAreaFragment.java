@@ -35,7 +35,6 @@ import okhttp3.Callback;
 import okhttp3.Response;
 
 /**
- * Created by ts on 17-11-29.
  */
 
 public class ChooseAreaFragment extends Fragment {
@@ -61,7 +60,8 @@ public class ChooseAreaFragment extends Fragment {
 
 
     @Override
-    public View onCreateView(LayoutInflater inflater, @Nullable ViewGroup container, Bundle savedInstanceState) {
+    public View onCreateView(LayoutInflater inflater, @Nullable ViewGroup container,
+                             Bundle savedInstanceState) {
         View view = inflater.inflate(R.layout.choose_area, container, false);
 
         titleText = view.findViewById(R.id.title_text);
@@ -97,11 +97,11 @@ public class ChooseAreaFragment extends Fragment {
                         intent.putExtra("weather_id", weatherId);
                         startActivity(intent);
                         getActivity().finish();
-                    }else if (getActivity() instanceof WeatherActivity){
-                        WeatherActivity activity= (WeatherActivity) getActivity();
+                    } else if (getActivity() instanceof WeatherActivity) {
+                        WeatherActivity activity = (WeatherActivity) getActivity();
                         activity.drawerLayout.closeDrawers();
                         activity.swipeRefreshLayout.setRefreshing(true);
-                        activity.requestWeather(weatherId);
+                        activity.requestWeatherInfo(weatherId);
 
                     }
                 }
@@ -124,7 +124,8 @@ public class ChooseAreaFragment extends Fragment {
     private void queryCounties() {
         titleText.setText(selectedCity.getCityName());
         backButton.setVisibility(View.VISIBLE);
-        countyList = DataSupport.where("cityid=?", String.valueOf(selectedCity.getId())).find(County.class);
+        countyList = DataSupport.where("cityid=?",
+                String.valueOf(selectedCity.getId())).find(County.class);
 
         if (countyList.size() > 0) {
             dataList.clear();
@@ -145,7 +146,8 @@ public class ChooseAreaFragment extends Fragment {
     private void queryCities() {
         titleText.setText(selectedProvince.getProvinceName());
         backButton.setVisibility(View.VISIBLE);
-        cityList = DataSupport.where("provinceid=?", String.valueOf(selectedProvince.getId())).find(City.class);
+        cityList = DataSupport.where("provinceid=?",
+                String.valueOf(selectedProvince.getId())).find(City.class);
 
         if (cityList.size() > 0) {
             dataList.clear();

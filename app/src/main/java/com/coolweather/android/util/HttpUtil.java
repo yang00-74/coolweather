@@ -4,7 +4,6 @@ import okhttp3.OkHttpClient;
 import okhttp3.Request;
 
 /**
- * Created by ts on 17-11-29.
  */
 
 public class HttpUtil {

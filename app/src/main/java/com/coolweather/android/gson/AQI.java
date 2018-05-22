@@ -1,7 +1,6 @@
 package com.coolweather.android.gson;
 
 /**
- * Created by ts on 17-11-29.
  */
 
 public class AQI {
