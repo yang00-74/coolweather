@@ -4,6 +4,7 @@ import android.content.Intent;
 import android.content.SharedPreferences;
 import android.graphics.Color;
 import android.os.Build;
+import android.os.Looper;
 import android.preference.PreferenceManager;
 import android.support.v4.view.GravityCompat;
 import android.support.v4.widget.DrawerLayout;
@@ -22,11 +23,13 @@ import android.widget.Toast;
 import com.bumptech.glide.Glide;
 import com.coolweather.android.gson.Forecast;
 import com.coolweather.android.gson.Weather;
+import com.coolweather.android.model.WeatherModelImpl;
 import com.coolweather.android.presenter.WeatherPresenter;
 import com.coolweather.android.presenter.WeatherPresenterImpl;
 import com.coolweather.android.service.AutoUpdateService;
 import com.coolweather.android.util.HttpUtil;
 import com.coolweather.android.util.Utility;
+import com.coolweather.android.util.Utils;
 import com.coolweather.android.view.WeatherView;
 
 import java.io.IOException;
@@ -72,7 +75,7 @@ public class WeatherActivity extends AppCompatActivity implements WeatherView {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_weather);
 
-        presenter = new WeatherPresenterImpl(this);
+        presenter = new WeatherPresenterImpl(this, new WeatherModelImpl());
         presenter.init();
 
         SharedPreferences preferences = PreferenceManager.getDefaultSharedPreferences(this);
@@ -83,11 +86,14 @@ public class WeatherActivity extends AppCompatActivity implements WeatherView {
         if (bingPic != null) {
             Glide.with(this).load(bingPic).into(bingPicImg);
         } else {
-            presenter.loadPic();
+            presenter.requestPic();
         }
-
         if (weatherString != null) {
             Weather weather = Utility.handleWeatherRespone(weatherString);
+            if (weather == null || !"ok".equals(weather.status)) {
+                weatherLayout.setVisibility(View.INVISIBLE);
+                return;
+            }
             mWeatherId = weather.basic.weatherId;
             presenter.showWeather(weather);
         } else {
@@ -126,6 +132,7 @@ public class WeatherActivity extends AppCompatActivity implements WeatherView {
             @Override
             public void onRefresh() {
                 presenter.requestWeather(mWeatherId);
+                presenter.requestPic();
             }
         });
 
@@ -140,79 +147,26 @@ public class WeatherActivity extends AppCompatActivity implements WeatherView {
     }
 
     @Override
-    public void requestWeatherInfo(final String weatherId) {
-        mWeatherId = weatherId;
-        String weatherUrl = "http://guolin.tech/api/weather?cityid="
-                + weatherId + "&key=cdb7dc83f26141d9b83e15e6e92acb72";
-        HttpUtil.sendOkHttpRequest(weatherUrl, new Callback() {
+    public void handlerError() {
+        runOnUiThread(new Runnable() {
             @Override
-            public void onFailure(Call call, IOException e) {
-                runOnUiThread(new Runnable() {
-                    @Override
-                    public void run() {
-                        alertToast("获取失败");
-                        presenter.setRefresh(false);
-                    }
-                });
-            }
-
-            @Override
-            public void onResponse(Call call, Response response) throws IOException {
-                final String responseText = response.body().string();
-                final Weather weather = Utility.handleWeatherRespone(responseText);
-
-                runOnUiThread(new Runnable() {
-                    @Override
-                    public void run() {
-                        if (weather != null && "ok".equals(weather.status)) {
-                            SharedPreferences.Editor editor = PreferenceManager
-                                    .getDefaultSharedPreferences(WeatherActivity.this)
-                                    .edit();
-                            editor.putString("weather", responseText);
-                            editor.apply();
-                            presenter.showWeather(weather);
-                            alertToast("天气已更新");
-                        } else {
-                            alertToast("获取失败");
-                        }
-                        presenter.setRefresh(false);
-                    }
-                });
+            public void run() {
+                Utils.alertToast("获取天气失败");
+                presenter.setRefresh(false);
             }
         });
-        presenter.loadPic();
     }
-
-    private void alertToast(String message) {
-        Toast.makeText(WeatherActivity.this, message, Toast.LENGTH_SHORT).show();
-    }
-
 
     @Override
     public void loadBingPic() {
-        String requestBingPic = "http://guolin.tech/api/bing_pic";
-        HttpUtil.sendOkHttpRequest(requestBingPic, new Callback() {
-            @Override
-            public void onFailure(Call call, IOException e) {
-                e.printStackTrace();
-            }
-
-            @Override
-            public void onResponse(Call call, Response response) throws IOException {
-
-                final String bingPic = response.body().string();
-                SharedPreferences.Editor editor = PreferenceManager
-                        .getDefaultSharedPreferences(WeatherActivity.this).edit();
-                editor.putString("bing_pic", bingPic);
-                editor.apply();
+        final SharedPreferences preferences = PreferenceManager.getDefaultSharedPreferences(this);
+        final String bingPic = preferences.getString("bing_pic", null);
                 runOnUiThread(new Runnable() {
                     @Override
                     public void run() {
                         Glide.with(WeatherActivity.this).load(bingPic).into(bingPicImg);
                     }
                 });
-            }
-        });
     }
 
     @Override
@@ -265,7 +219,11 @@ public class WeatherActivity extends AppCompatActivity implements WeatherView {
         weatherLayout.setVisibility(View.VISIBLE);
         Intent intent = new Intent(this, AutoUpdateService.class);
         startService(intent);
-
+        presenter.setRefresh(false);
     }
 
+    public void requestWeather(String weatherId) {
+        mWeatherId = weatherId;
+        presenter.requestWeather(weatherId);
+    }
 }

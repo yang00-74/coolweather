@@ -16,6 +16,8 @@ import com.coolweather.android.gson.Weather;
 import com.coolweather.android.util.HttpUtil;
 import com.coolweather.android.util.Utility;
 
+import org.litepal.LitePalApplication;
+
 import java.io.IOException;
 
 import okhttp3.Call;
@@ -23,6 +25,8 @@ import okhttp3.Callback;
 import okhttp3.Response;
 
 public class AutoUpdateService extends Service {
+    private final static String ACTION_WEATHER_UPDATE = "update_weather";
+    private final static String ACTION_PIC_UPDATE = "update_picture";
     public AutoUpdateService() {
     }
 
@@ -49,7 +53,7 @@ public class AutoUpdateService extends Service {
         SharedPreferences preferences = PreferenceManager.getDefaultSharedPreferences(this);
         String weatherString = preferences.getString("weather", null);
         if (weatherString != null) {
-            final Weather weather = Utility.handleWeatherRespone(weatherString);
+            Weather weather = Utility.handleWeatherRespone(weatherString);
             String weatherId = weather.basic.weatherId;
 
             String weatherUrl = "http://guolin.tech/api/weather?cityid="

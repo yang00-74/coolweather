@@ -7,6 +7,7 @@ import android.os.Build;
 import android.os.Bundle;
 import android.support.annotation.Nullable;
 import android.support.annotation.RequiresApi;
+import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
@@ -101,11 +102,10 @@ public class ChooseAreaFragment extends Fragment {
                         WeatherActivity activity = (WeatherActivity) getActivity();
                         activity.drawerLayout.closeDrawers();
                         activity.swipeRefreshLayout.setRefreshing(true);
-                        activity.requestWeatherInfo(weatherId);
-
+                        Log.d("asd_requested_weather", weatherId);
+                        activity.requestWeather(weatherId);
                     }
                 }
-
             }
         });
         backButton.setOnClickListener(new View.OnClickListener() {
