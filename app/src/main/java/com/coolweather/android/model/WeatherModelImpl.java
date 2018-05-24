@@ -1,22 +1,17 @@
 package com.coolweather.android.model;
 
-import android.content.Intent;
 import android.content.SharedPreferences;
-import android.os.Looper;
 import android.preference.PreferenceManager;
-import android.text.TextUtils;
 import android.util.Log;
 
 import com.coolweather.android.gson.Weather;
 import com.coolweather.android.util.HttpUtil;
 import com.coolweather.android.util.Utility;
 import com.coolweather.android.util.Utils;
-import com.google.gson.Gson;
 
 import org.litepal.LitePalApplication;
 
 import java.io.IOException;
-import java.net.InterfaceAddress;
 
 import okhttp3.Call;
 import okhttp3.Callback;
@@ -32,7 +27,7 @@ public class WeatherModelImpl implements WeatherModel {
 
     @Override
     public void requestBingPic() {
-        String requestBingPic = "http://guolin.tech/api/bing_pic";
+        String requestBingPic = Utils.getPicPath();
         HttpUtil.sendOkHttpRequest(requestBingPic, new Callback() {
             @Override
             public void onFailure(Call call, IOException e) {
@@ -55,8 +50,7 @@ public class WeatherModelImpl implements WeatherModel {
     public void requestWeatherInfo(String weatherId) {
 
         Log.d("asd_entry_model_request", weatherId.toString());
-        String weatherUrl = "http://guolin.tech/api/weather?cityid="
-                + weatherId + "&key=cdb7dc83f26141d9b83e15e6e92acb72";
+        String weatherUrl = Utils.getWeatherPath(weatherId);
         HttpUtil.sendOkHttpRequest(weatherUrl, new Callback() {
             @Override
             public void onFailure(Call call, IOException e) {

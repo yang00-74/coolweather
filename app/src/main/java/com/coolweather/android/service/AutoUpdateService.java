@@ -8,15 +8,12 @@ import android.content.SharedPreferences;
 import android.os.IBinder;
 import android.os.SystemClock;
 import android.preference.PreferenceManager;
-import android.widget.Toast;
+import android.util.Log;
 
-import com.bumptech.glide.Glide;
-import com.coolweather.android.WeatherActivity;
 import com.coolweather.android.gson.Weather;
 import com.coolweather.android.util.HttpUtil;
 import com.coolweather.android.util.Utility;
-
-import org.litepal.LitePalApplication;
+import com.coolweather.android.util.Utils;
 
 import java.io.IOException;
 
@@ -25,8 +22,6 @@ import okhttp3.Callback;
 import okhttp3.Response;
 
 public class AutoUpdateService extends Service {
-    private final static String ACTION_WEATHER_UPDATE = "update_weather";
-    private final static String ACTION_PIC_UPDATE = "update_picture";
     public AutoUpdateService() {
     }
 
@@ -39,13 +34,15 @@ public class AutoUpdateService extends Service {
     public int onStartCommand(Intent intent, int flags, int startId) {
         updateWeather();
         updateBingpic();
-        AlarmManager manager = (AlarmManager) getSystemService(ALARM_SERVICE);
-        int anHour = 5 * 60 * 1000;
-        long triggerAtTime = SystemClock.elapsedRealtime() + anHour;
+        Log.d("asd_entry_service","onStartCommand");
+        AlarmManager alarmManager = (AlarmManager) getSystemService(ALARM_SERVICE);
+        int time = 5 * 60 * 1000;
+        long triggerTime = SystemClock.elapsedRealtime() + time;
         Intent intent1 = new Intent(this, AutoUpdateService.class);
         PendingIntent pi = PendingIntent.getService(this, 0, intent1, 0);
-        manager.cancel(pi);
-        manager.set(AlarmManager.ELAPSED_REALTIME_WAKEUP, triggerAtTime, pi);
+        assert alarmManager != null;
+        alarmManager.cancel(pi);
+        alarmManager.set(AlarmManager.ELAPSED_REALTIME_WAKEUP, triggerTime, pi);
         return super.onStartCommand(intent, flags, startId);
     }
 
@@ -56,8 +53,7 @@ public class AutoUpdateService extends Service {
             Weather weather = Utility.handleWeatherRespone(weatherString);
             String weatherId = weather.basic.weatherId;
 
-            String weatherUrl = "http://guolin.tech/api/weather?cityid="
-                    + weatherId + "&key=cdb7dc83f26141d9b83e15e6e92acb72";
+            String weatherUrl = Utils.getWeatherPath(weatherId);
             HttpUtil.sendOkHttpRequest(weatherUrl, new Callback() {
                 @Override
                 public void onFailure(Call call, IOException e) {
@@ -84,7 +80,7 @@ public class AutoUpdateService extends Service {
     }
 
     private void updateBingpic() {
-        String requestBingPic = "http://guolin.tech/api/bing_pic";
+        String requestBingPic = Utils.getPicPath();
         HttpUtil.sendOkHttpRequest(requestBingPic, new Callback() {
             @Override
             public void onFailure(Call call, IOException e) {

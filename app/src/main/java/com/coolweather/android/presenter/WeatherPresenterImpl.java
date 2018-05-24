@@ -4,7 +4,6 @@ import android.text.TextUtils;
 import android.util.Log;
 
 import com.coolweather.android.gson.Weather;
-import com.coolweather.android.model.WeatherModel;
 import com.coolweather.android.model.WeatherModelImpl;
 import com.coolweather.android.util.Utils;
 import com.coolweather.android.view.WeatherView;
@@ -46,7 +45,7 @@ public class WeatherPresenterImpl implements WeatherPresenter {
         weatherView.loadBingPic();
     }
 
-    public void handlerErrorUI() {
+    private void handlerErrorUI() {
         weatherView.handlerError();
     }
 
