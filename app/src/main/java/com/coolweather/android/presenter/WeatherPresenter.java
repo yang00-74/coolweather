@@ -15,4 +15,6 @@ public interface WeatherPresenter {
     void showWeather(Weather weather);
 
     void init();
+
+    void onDestroy();
 }

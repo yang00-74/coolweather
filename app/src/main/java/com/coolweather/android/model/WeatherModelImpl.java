@@ -5,8 +5,8 @@ import android.preference.PreferenceManager;
 import android.util.Log;
 
 import com.coolweather.android.gson.Weather;
-import com.coolweather.android.util.HttpUtil;
-import com.coolweather.android.util.Utility;
+import com.coolweather.android.util.HttpRequestUtil;
+import com.coolweather.android.util.HandleHttpResponseUtils;
 import com.coolweather.android.util.Utils;
 
 import org.litepal.LitePalApplication;
@@ -28,16 +28,16 @@ public class WeatherModelImpl implements WeatherModel {
     @Override
     public void requestBingPic() {
         String requestBingPic = Utils.getPicPath();
-        HttpUtil.sendOkHttpRequest(requestBingPic, new Callback() {
+        HttpRequestUtil.sendHttpRequest(requestBingPic, new Callback() {
             @Override
             public void onFailure(Call call, IOException e) {
                 listener.onErrorStatus();
             }
 
             @Override
-            public void onResponse(Call call, Response response) throws IOException {
+            public void onResponse(Call call, Response httpResponse) throws IOException {
 
-                final String bingPic = response.body().string();
+                final String bingPic = httpResponse.body().string();
                 SharedPreferences.Editor editor = PreferenceManager
                         .getDefaultSharedPreferences(LitePalApplication.getContext()).edit();
                 editor.putString("bing_pic", bingPic);
@@ -49,27 +49,27 @@ public class WeatherModelImpl implements WeatherModel {
 
     public void requestWeatherInfo(String weatherId) {
 
-        Log.d("asd_entry_model_request", weatherId.toString());
+        Log.d("asd_entry_model_request", weatherId);
         String weatherUrl = Utils.getWeatherPath(weatherId);
-        HttpUtil.sendOkHttpRequest(weatherUrl, new Callback() {
+        HttpRequestUtil.sendHttpRequest(weatherUrl, new Callback() {
             @Override
             public void onFailure(Call call, IOException e) {
                 listener.onErrorStatus();
             }
 
             @Override
-            public void onResponse(Call call, Response response) throws IOException {
-                String responseText = response.body().string();
-                Weather weather = Utility.handleWeatherRespone(responseText);
+            public void onResponse(Call call, Response httpResponse) throws IOException {
+                String responseContent = httpResponse.body().string();
+                Weather weather = HandleHttpResponseUtils.handleResponeOfWeather(responseContent);
                 if (weather == null || !"ok".equals(weather.status)) {
                     listener.onErrorStatus();
                     return;
                 }
-                Log.d("asd_model_response", responseText);
+                Log.d("asd_model_response", responseContent);
                 SharedPreferences.Editor editor = PreferenceManager
                         .getDefaultSharedPreferences(LitePalApplication.getContext())
                         .edit();
-                editor.putString("weather", responseText);
+                editor.putString("weather", responseContent);
                 editor.apply();
                 listener.onRequestWeatherSuccess(weather);
             }

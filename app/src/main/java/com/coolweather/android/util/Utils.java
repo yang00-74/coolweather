@@ -17,4 +17,15 @@ public class Utils {
         return String.valueOf("http://guolin.tech/api/weather?cityid="
                 + weatherId + "&key=cdb7dc83f26141d9b83e15e6e92acb72");
     }
+
+    public static String getServerPath() {
+        return String.valueOf("http://guolin.tech/api/china/");
+    }
+
+    public enum SelectedLevel{
+        PROVINCE,
+        CITY,
+        COUNTY,
+        NONE,
+    }
 }

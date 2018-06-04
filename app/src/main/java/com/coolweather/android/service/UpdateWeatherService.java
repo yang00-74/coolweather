@@ -10,10 +10,13 @@ import android.os.SystemClock;
 import android.preference.PreferenceManager;
 import android.util.Log;
 
+import com.coolweather.android.R;
 import com.coolweather.android.gson.Weather;
-import com.coolweather.android.util.HttpUtil;
-import com.coolweather.android.util.Utility;
+import com.coolweather.android.util.HttpRequestUtil;
+import com.coolweather.android.util.HandleHttpResponseUtils;
 import com.coolweather.android.util.Utils;
+
+import org.litepal.LitePalApplication;
 
 import java.io.IOException;
 
@@ -21,8 +24,8 @@ import okhttp3.Call;
 import okhttp3.Callback;
 import okhttp3.Response;
 
-public class AutoUpdateService extends Service {
-    public AutoUpdateService() {
+public class UpdateWeatherService extends Service {
+    public UpdateWeatherService() {
     }
 
     @Override
@@ -38,7 +41,7 @@ public class AutoUpdateService extends Service {
         AlarmManager alarmManager = (AlarmManager) getSystemService(ALARM_SERVICE);
         int time = 5 * 60 * 1000;
         long triggerTime = SystemClock.elapsedRealtime() + time;
-        Intent intent1 = new Intent(this, AutoUpdateService.class);
+        Intent intent1 = new Intent(this, UpdateWeatherService.class);
         PendingIntent pi = PendingIntent.getService(this, 0, intent1, 0);
         assert alarmManager != null;
         alarmManager.cancel(pi);
@@ -50,11 +53,11 @@ public class AutoUpdateService extends Service {
         SharedPreferences preferences = PreferenceManager.getDefaultSharedPreferences(this);
         String weatherString = preferences.getString("weather", null);
         if (weatherString != null) {
-            Weather weather = Utility.handleWeatherRespone(weatherString);
+            Weather weather = HandleHttpResponseUtils.handleResponeOfWeather(weatherString);
             String weatherId = weather.basic.weatherId;
 
             String weatherUrl = Utils.getWeatherPath(weatherId);
-            HttpUtil.sendOkHttpRequest(weatherUrl, new Callback() {
+            HttpRequestUtil.sendHttpRequest(weatherUrl, new Callback() {
                 @Override
                 public void onFailure(Call call, IOException e) {
                     e.printStackTrace();
@@ -63,13 +66,13 @@ public class AutoUpdateService extends Service {
                 @Override
                 public void onResponse(Call call, Response response) throws IOException {
 
-                    String responseText = response.body().string();
-                    Weather weather = Utility.handleWeatherRespone(responseText);
+                    String httpResponse = response.body().string();
+                    Weather weather = HandleHttpResponseUtils.handleResponeOfWeather(httpResponse);
 
-                    if (weather != null && "ok".equals(weather.status)) {
+                    if (null != weather && "ok".equals(weather.status)) {
                         SharedPreferences.Editor editor = PreferenceManager
-                                .getDefaultSharedPreferences(AutoUpdateService.this).edit();
-                        editor.putString("weather", responseText);
+                                .getDefaultSharedPreferences(LitePalApplication.getContext()).edit();
+                        editor.putString("weather", httpResponse);
                         editor.apply();
                     }
                 }
@@ -81,7 +84,7 @@ public class AutoUpdateService extends Service {
 
     private void updateBingpic() {
         String requestBingPic = Utils.getPicPath();
-        HttpUtil.sendOkHttpRequest(requestBingPic, new Callback() {
+        HttpRequestUtil.sendHttpRequest(requestBingPic, new Callback() {
             @Override
             public void onFailure(Call call, IOException e) {
                 e.printStackTrace();
@@ -92,7 +95,7 @@ public class AutoUpdateService extends Service {
 
                 final String bingPic = response.body().string();
                 SharedPreferences.Editor editor = PreferenceManager
-                        .getDefaultSharedPreferences(AutoUpdateService.this).edit();
+                        .getDefaultSharedPreferences(LitePalApplication.getContext()).edit();
                 editor.putString("bing_pic", bingPic);
                 editor.apply();
             }

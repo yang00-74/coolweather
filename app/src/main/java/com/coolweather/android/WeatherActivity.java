@@ -24,8 +24,8 @@ import com.coolweather.android.gson.Weather;
 import com.coolweather.android.model.WeatherModelImpl;
 import com.coolweather.android.presenter.WeatherPresenter;
 import com.coolweather.android.presenter.WeatherPresenterImpl;
-import com.coolweather.android.service.AutoUpdateService;
-import com.coolweather.android.util.Utility;
+import com.coolweather.android.service.UpdateWeatherService;
+import com.coolweather.android.util.HandleHttpResponseUtils;
 import com.coolweather.android.util.Utils;
 import com.coolweather.android.view.WeatherView;
 
@@ -80,7 +80,7 @@ public class WeatherActivity extends AppCompatActivity implements WeatherView {
             presenter.requestPic();
         }
         if (weatherString != null) {
-            Weather weather = Utility.handleWeatherRespone(weatherString);
+            Weather weather = HandleHttpResponseUtils.handleResponeOfWeather(weatherString);
             if (weather == null || !"ok".equals(weather.status)) {
                 weatherLayout.setVisibility(View.INVISIBLE);
                 return;
@@ -149,6 +149,26 @@ public class WeatherActivity extends AppCompatActivity implements WeatherView {
     }
 
     @Override
+    public void handlerSuccess() {
+        runOnUiThread(new Runnable() {
+            @Override
+            public void run() {
+                Utils.alertToast("天气已更新");
+            }
+        });
+    }
+
+    @Override
+    public void doFinish() {
+        runOnUiThread(new Runnable() {
+            @Override
+            public void run() {
+                WeatherActivity.this.finish();
+            }
+        });
+    }
+
+    @Override
     public void loadBingPic() {
         final SharedPreferences preferences = PreferenceManager.getDefaultSharedPreferences(this);
         final String bingPic = preferences.getString("bing_pic", null);
@@ -212,7 +232,7 @@ public class WeatherActivity extends AppCompatActivity implements WeatherView {
                 sportText.setText(sport);
 
                 weatherLayout.setVisibility(View.VISIBLE);
-                Intent intent = new Intent(WeatherActivity.this, AutoUpdateService.class);
+                Intent intent = new Intent(WeatherActivity.this, UpdateWeatherService.class);
                 startService(intent);
                 presenter.setRefresh(false);
             }
@@ -223,5 +243,11 @@ public class WeatherActivity extends AppCompatActivity implements WeatherView {
     public void requestWeather(String weatherId) {
         mWeatherId = weatherId;
         presenter.requestWeather(weatherId);
+    }
+
+    @Override
+    protected void onDestroy() {
+        presenter.onDestroy();
+        super.onDestroy();
     }
 }

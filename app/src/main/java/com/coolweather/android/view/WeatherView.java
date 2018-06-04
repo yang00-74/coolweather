@@ -14,4 +14,8 @@ public interface WeatherView {
     void initView();
 
     void handlerError();
+
+    void handlerSuccess();
+
+    void doFinish();
 }

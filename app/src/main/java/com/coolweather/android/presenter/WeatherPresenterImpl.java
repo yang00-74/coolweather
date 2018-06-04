@@ -1,5 +1,8 @@
 package com.coolweather.android.presenter;
 
+import android.content.BroadcastReceiver;
+import android.content.Context;
+import android.content.Intent;
 import android.text.TextUtils;
 import android.util.Log;
 
@@ -21,6 +24,7 @@ public class WeatherPresenterImpl implements WeatherPresenter {
             @Override
             public void onRequestWeatherSuccess(Weather weather) {
                 showWeather(weather);
+                handleSuccessUI();
             }
 
             @Override
@@ -49,6 +53,10 @@ public class WeatherPresenterImpl implements WeatherPresenter {
         weatherView.handlerError();
     }
 
+    private void handleSuccessUI() {
+        weatherView.handlerSuccess();
+    }
+
     @Override
     public void setRefresh(boolean flag) {
         weatherView.setSwipRefresh(flag);
@@ -74,5 +82,10 @@ public class WeatherPresenterImpl implements WeatherPresenter {
     @Override
     public void init() {
         weatherView.initView();
+    }
+
+    @Override
+    public void onDestroy() {
+        weatherView.doFinish();
     }
 }

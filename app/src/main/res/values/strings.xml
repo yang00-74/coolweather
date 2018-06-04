@@ -1,3 +1,4 @@
 <resources>
-    <string name="app_name">酷哦天气</string>
+    <string name="app_name">和天气</string>
+    <string name="notify_weather_update">weather_update</string>
 </resources>
